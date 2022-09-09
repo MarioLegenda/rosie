@@ -26,6 +26,7 @@ A comma separated list of URLs that will be clicked i.e. request will be sent to
 moment, this package only supports GET request.
 
 ``--users : optional|int`` Number of users to simulate
+
 ``--interval : optional|string`` Interval with which this package will simulate a single user clicking on a link.
 
 
