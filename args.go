@@ -92,6 +92,11 @@ func newArgs(args []string) (arguments, error) {
 				a.intervalMax = m
 			}
 		}
+
+		if k != "--interval" {
+			a.intervalMin = 3
+			a.intervalMax = 15
+		}
 	}
 
 	return a, nil

@@ -3,28 +3,38 @@ package main
 import (
 	"crypto/tls"
 	"log"
-	"therebelsource/simulation/httpClient"
+	"simulation/httpClient"
 )
 
-func sendRequest(url string) bool {
-	client, err := httpClient.NewHttpClient(&tls.Config{InsecureSkipVerify: true})
-
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	response, clientError := client.MakeJsonRequest(&httpClient.JsonRequest{
+func sendRequest(http http, url string) bool {
+	response, clientError := http.client.MakeJsonRequest(&httpClient.JsonRequest{
 		Url:    url,
 		Method: "GET",
 	})
 
 	if clientError != nil {
-		log.Fatalln(clientError)
+		return false
 	}
 
-	if response.Status != 200 {
+	if response.Status < 200 && response.Status > 299 {
 		return false
 	}
 
 	return true
+}
+
+type http struct {
+	client *httpClient.HttpClient
+}
+
+func newHttp() http {
+	c, err := httpClient.NewHttpClient(&tls.Config{InsecureSkipVerify: true}, 1024, 0)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return http{
+		client: c,
+	}
 }

@@ -21,8 +21,8 @@ func newSimulator(user user) simulator {
 	}
 }
 
-func click(url string) bool {
-	return sendRequest(url)
+func click(http http, url string) bool {
+	return sendRequest(http, url)
 }
 
 func newStream(id string, result bool) stream {
@@ -32,23 +32,22 @@ func newStream(id string, result bool) stream {
 	}
 }
 
-func simulate(s simulator, st chan stream, stat chan status) {
+func simulate(http http, s simulator, st chan stream, stat chan status) {
 	go func(s simulator, str chan stream, stat chan status) {
 		user := s.user
 		urls := user.urls
 
-		ticker := newTicker(random(user.Min, user.Max))
-		nextClick := 0
+		for _, u := range urls {
+			ticker := newTicker(random(user.Min, user.Max))
 
-		for _ = range ticker.tick {
-			if nextClick < len(urls) {
-				st <- newStream(user.UUID, click(urls[nextClick]))
-				nextClick++
-			} else {
-				stat <- status{id: s.id}
-				return
+			for _ = range ticker.tick {
+				st <- newStream(user.UUID, click(http, u))
+
+				break
 			}
 		}
+
+		stat <- status{id: s.id}
 	}(s, st, stat)
 }
 

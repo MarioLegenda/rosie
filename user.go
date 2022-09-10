@@ -27,6 +27,10 @@ type user struct {
 
 func createUsers(usrNum int, urls []string, min int, max int) []user {
 	users := make([]user, 0)
+	if usrNum == 0 {
+		usrNum = 5
+	}
+
 	for i := 0; i < usrNum; i++ {
 		u := user{}
 		err := faker.FakeData(&u)

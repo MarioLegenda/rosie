@@ -1,6 +1,8 @@
 package main
 
-import "time"
+import (
+	"time"
+)
 
 type ticker struct {
 	tick chan bool
@@ -8,19 +10,21 @@ type ticker struct {
 
 func newTicker(interval int) ticker {
 	tick := make(chan bool)
-	ticker := ticker{tick: tick}
+	tckr := ticker{tick: tick}
 
-	go func(t chan bool) {
+	go func(t ticker) {
 		for {
-			m := time.Now().Unix() + int64(interval)
+			tk := time.NewTicker(time.Duration(interval) * time.Second)
 
-			for {
-				if time.Now().Unix() > m {
-					ticker.tick <- true
-				}
+			for _ = range tk.C {
+				t.tick <- true
+
+				tk.Stop()
+
+				return
 			}
 		}
-	}(tick)
+	}(tckr)
 
-	return ticker
+	return tckr
 }

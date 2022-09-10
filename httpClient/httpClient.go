@@ -86,9 +86,11 @@ func (e *NetworkError) Type() string {
 	return "network_error"
 }
 
-func NewHttpClient(config *tls.Config) (*HttpClient, error) {
+func NewHttpClient(config *tls.Config, idleConn int, handshakeTimeout time.Duration) (*HttpClient, error) {
 	tr := &http.Transport{
-		TLSClientConfig: config,
+		TLSClientConfig:     config,
+		MaxConnsPerHost:     idleConn,
+		TLSHandshakeTimeout: handshakeTimeout,
 	}
 
 	client := &http.Client{
@@ -101,6 +103,8 @@ func NewHttpClient(config *tls.Config) (*HttpClient, error) {
 
 func (ac *HttpClient) MakeJsonRequest(r *JsonRequest) (RawResponse, IClientError) {
 	request, err := http.NewRequest(r.Method, r.Url, bytes.NewBuffer(r.Body))
+
+	request.SetBasicAuth("mgmotor", "g2062U8QWcER")
 
 	if err != nil {
 		return RawResponse{}, &NetworkError{
