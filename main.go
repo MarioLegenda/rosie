@@ -2,24 +2,24 @@ package main
 
 import (
 	"fmt"
-	tm "github.com/buger/goterm"
 	"log"
 	"os"
 	"time"
 )
 
 func main() {
-	tm.Clear()
-
 	run()
 }
 
 func coldStart(http http, urls []string) {
+	fmt.Println("")
+	fmt.Println("Initiating cold start...")
 	for _, url := range urls {
 		if value := click(http, url); !value {
 			log.Fatal(fmt.Sprintf("URL %s did not return status code 200", url))
 		}
 	}
+	fmt.Println("Cold start finished. Sleeping for 10 seconds to give the server time to prepare for real testing...")
 }
 
 func run() {
@@ -29,23 +29,23 @@ func run() {
 		log.Fatal(err.Error())
 	}
 
-	stop := make(chan bool)
-
 	http := newHttp()
 
-	fmt.Println("")
-	fmt.Println("Initiating cold start...")
 	coldStart(http, args.links)
-	fmt.Println("Cold start finished. Sleeping for 10 seconds to give the server time to prepare for real testing...")
 	time.Sleep(time.Second * 10)
 
+	stop := newExit()
+
 	users := createUsers(args.users, args.links, args.intervalMin, args.intervalMax)
-	outputs := createOutputs(users)
 	simulators := createSimulator(users)
 
-	stream := spawn(http, simulators)
+	fmt.Println("Running load requests now...")
+	fmt.Println("")
+	ttl := watchOutput(createOutputs(users), spawn(args, http, simulators), stop)
 
-	watchOutput(outputs, stream)
+	initInterval(args.duration)
+	initProgressBar(args.duration)
+	watchExit(stop, ttl)
 
-	<-stop
+	<-stop.stop
 }

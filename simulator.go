@@ -1,5 +1,7 @@
 package main
 
+import "time"
+
 type simulator struct {
 	id string
 	user
@@ -38,7 +40,7 @@ func simulate(http http, s simulator, st chan stream, stat chan status) {
 		urls := user.urls
 
 		for _, u := range urls {
-			ticker := newTicker(random(user.Min, user.Max))
+			ticker := newTicker(time.Duration(random(user.Min, user.Max)) * time.Second)
 
 			for _ = range ticker.tick {
 				st <- newStream(user.UUID, click(http, u))

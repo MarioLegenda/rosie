@@ -12,6 +12,8 @@ type arguments struct {
 	links       []string
 	intervalMin int
 	intervalMax int
+	throttle    bool
+	duration    int
 }
 
 func newArgs(args []string) (arguments, error) {
@@ -31,10 +33,12 @@ func newArgs(args []string) (arguments, error) {
 	}
 
 	a := arguments{
-		users:       0,
+		users:       50,
 		links:       nil,
-		intervalMin: 0,
-		intervalMax: 0,
+		intervalMin: 3,
+		intervalMax: 15,
+		throttle:    false,
+		duration:    60,
 	}
 
 	_, ok := argMap["--links"]
@@ -52,7 +56,7 @@ func newArgs(args []string) (arguments, error) {
 			j, err := strconv.Atoi(v)
 
 			if err != nil {
-				return arguments{}, errors.New("Unable to converts --users value to integer. --users value must be an integer")
+				return arguments{}, errors.New("Unable to convert --users value to integer. --users value must be an integer")
 			}
 
 			a.users = j
@@ -93,9 +97,18 @@ func newArgs(args []string) (arguments, error) {
 			}
 		}
 
-		if k != "--interval" {
-			a.intervalMin = 3
-			a.intervalMax = 15
+		if k == "--throttle" && v == "true" {
+			a.throttle = true
+		}
+
+		if k == "--duration" {
+			m, err := strconv.Atoi(v)
+
+			if err != nil {
+				return arguments{}, errors.New("Unable to convert --duration value to integer. --duration value must be an integer")
+			}
+
+			a.duration = m
 		}
 	}
 

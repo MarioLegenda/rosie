@@ -6,8 +6,6 @@ import (
 	"time"
 )
 
-const DATE_LAYOUT = "2006-01-02T15:04:05Z"
-
 type output struct {
 	id              string
 	name            string
@@ -43,10 +41,10 @@ func showTable() {
 	tm.Flush()
 }
 
-func createOutputs(users []user) []*output {
-	outputs := make([]*output, 0)
+func createOutputs(users []user) []output {
+	outputs := make([]output, 0)
 	for _, u := range users {
-		o := &output{
+		o := output{
 			id:              u.UUID,
 			name:            u.Name,
 			lastName:        u.LastName,
@@ -61,55 +59,56 @@ func createOutputs(users []user) []*output {
 	return outputs
 }
 
-func watchOutput(outputs []*output, st chan stream) {
-	buildOutput(total{
-		success:     0,
-		failed:      0,
-		total:       0,
-		elapsedTime: 0,
-	}, createBaseTable())
-	showTable()
+func watchOutput(outputs []output, st chan stream, ext exit) chan total {
 	start := time.Now().Unix()
+	stop := make(chan total)
 	// calculate request fail/success
-	go func(stream chan stream, outputs []*output) {
+	go func(stream chan stream, outputs []output) {
 		internalOutputs := outputs
 		ttl := total{
-			success: 0,
-			failed:  0,
-			total:   0,
+			success:     0,
+			failed:      0,
+			total:       0,
+			elapsedTime: 0,
 		}
 
 		for s := range stream {
-			for i, o := range internalOutputs {
-				if s.id == o.id {
-					o.totalRequestNum++
+			select {
+			case <-ext.ctx.Done():
+				stop <- ttl
 
-					if s.result {
-						o.success++
-					} else {
-						o.failed++
+				return
+			default:
+				for i, o := range internalOutputs {
+					if s.id == o.id {
+						o.totalRequestNum++
+
+						if s.result {
+							o.success++
+						} else {
+							o.failed++
+						}
+
+						internalOutputs[i] = o
+
+						break
 					}
-
-					internalOutputs[i] = o
-
-					break
 				}
+
+				sc, t, f := 0, 0, 0
+				for _, o := range internalOutputs {
+					t += o.totalRequestNum
+					sc += o.success
+					f += o.failed
+				}
+
+				ttl.total = t
+				ttl.success = sc
+				ttl.failed = f
+				ttl.elapsedTime = time.Now().Unix() - start
 			}
-
-			sc, t, f := 0, 0, 0
-			for _, o := range internalOutputs {
-				t += o.totalRequestNum
-				sc += o.success
-				f += o.failed
-			}
-
-			ttl.total = t
-			ttl.success = sc
-			ttl.failed = f
-			ttl.elapsedTime = time.Now().Unix() - start
-
-			buildOutput(ttl, createBaseTable())
-			showTable()
 		}
 	}(st, outputs)
+
+	return stop
 }

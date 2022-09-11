@@ -8,18 +8,20 @@ type ticker struct {
 	tick chan bool
 }
 
-func newTicker(interval int) ticker {
+func newTicker(duration time.Duration) ticker {
 	tick := make(chan bool)
 	tckr := ticker{tick: tick}
 
 	go func(t ticker) {
 		for {
-			tk := time.NewTicker(time.Duration(interval) * time.Second)
+			tk := time.NewTicker(duration)
 
 			for _ = range tk.C {
 				t.tick <- true
 
 				tk.Stop()
+
+				close(t.tick)
 
 				return
 			}
