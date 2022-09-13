@@ -47,6 +47,8 @@ func initProgressBar(duration int) {
 			bar.Add(1)
 			time.Sleep(1000 * time.Millisecond)
 		}
+		
+		bar.Close()
 	}()
 }
 

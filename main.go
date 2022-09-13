@@ -36,16 +36,20 @@ func run() {
 
 	stop := newExit()
 
-	users := createUsers(args.users, args.links, args.intervalMin, args.intervalMax)
+	users := createUsers(args)
 	simulators := createSimulator(users)
+	data := newSpawnData()
 
-	fmt.Println("Running load requests now...")
-	fmt.Println("")
-	ttl := watchOutput(createOutputs(users), spawn(args, http, simulators), stop)
+	if args.throttle {
+		throttle(data, simulators)
+	} else {
+		fmt.Println("Running load requests now...")
+		fmt.Println("")
+	}
 
 	initInterval(args.duration)
 	initProgressBar(args.duration)
-	watchExit(stop, ttl)
+	watchExit(stop, watchOutput(createOutputs(users), spawn(args, simulators, data), stop))
 
 	<-stop.stop
 }

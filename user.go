@@ -25,8 +25,9 @@ type user struct {
 	urls []string
 }
 
-func createUsers(usrNum int, urls []string, min int, max int) []user {
+func createUsers(args arguments) []user {
 	users := make([]user, 0)
+	usrNum := args.users
 	if usrNum == 0 {
 		usrNum = 5
 	}
@@ -38,9 +39,9 @@ func createUsers(usrNum int, urls []string, min int, max int) []user {
 			log.Fatal(fmt.Sprintf("Unable to fake user data with faker: %s", err.Error()))
 		}
 
-		u.Min = min
-		u.Max = max
-		u.urls = urls
+		u.Min = args.intervalMin
+		u.Max = args.intervalMax
+		u.urls = args.links
 
 		users = append(users, u)
 	}

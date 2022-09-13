@@ -7,11 +7,9 @@ type loadCalc struct {
 }
 
 func newLoadCalc(num int, parts int) loadCalc {
-	t := num / parts
-	r := num % parts
 	return loadCalc{
-		total:     t,
-		remainder: r,
+		total:     num / parts,
+		remainder: num % parts,
 		parts:     parts,
 	}
 }
