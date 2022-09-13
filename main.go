@@ -11,7 +11,7 @@ func main() {
 	run()
 }
 
-func coldStart(http http, urls []string) {
+func coldStart(http mainHttpClient, urls []string) {
 	fmt.Println("")
 	fmt.Println("Initiating cold start...")
 	for _, url := range urls {

@@ -3,38 +3,46 @@ package main
 import (
 	"crypto/tls"
 	"log"
+	"net/http"
 	"simulation/httpClient"
 )
 
-func sendRequest(http http, url string) bool {
-	response, clientError := http.client.MakeJsonRequest(&httpClient.JsonRequest{
-		Url:    url,
-		Method: "GET",
+type mainHttpClient struct {
+	client *http.Client
+}
+
+func newHttp() mainHttpClient {
+	client := httpClient.NewClient(httpClient.ClientParams{
+		Transport: &http.Transport{
+			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
+			MaxConnsPerHost:     1024,
+			TLSHandshakeTimeout: 0,
+		},
+		CheckRedirect: nil,
+		Jar:           nil,
+		Timeout:       0,
 	})
 
-	if clientError != nil {
-		return false
-	}
-
-	if response.Status < 200 && response.Status > 299 {
-		return false
-	}
-
-	return true
+	return mainHttpClient{client: client}
 }
 
-type http struct {
-	client *httpClient.HttpClient
-}
-
-func newHttp() http {
-	c, err := httpClient.NewHttpClient(&tls.Config{InsecureSkipVerify: true}, 1024, 0)
+func sendRequest(http mainHttpClient, url string) (*http.Response, error) {
+	request, err := httpClient.NewRequest(httpClient.Request{
+		Headers: nil,
+		Url:     url,
+		Method:  "GET",
+		Body:    nil,
+	})
 
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	return http{
-		client: c,
+	response, err := httpClient.Make(request, http.client)
+
+	if err != nil {
+		log.Fatalln(err)
 	}
+
+	return response, nil
 }

@@ -3,7 +3,7 @@ package main
 type spawnData struct {
 	stream chan stream
 	output chan status
-	http   http
+	http   mainHttpClient
 }
 
 func newSpawnData() spawnData {

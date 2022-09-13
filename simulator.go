@@ -23,8 +23,14 @@ func newSimulator(user user) simulator {
 	}
 }
 
-func click(http http, url string) bool {
-	return sendRequest(http, url)
+func click(http mainHttpClient, url string) bool {
+	response, _ := sendRequest(http, url)
+
+	if response.StatusCode < 200 && response.StatusCode > 299 {
+		return false
+	}
+
+	return true
 }
 
 func newStream(id string, result bool) stream {
@@ -34,7 +40,7 @@ func newStream(id string, result bool) stream {
 	}
 }
 
-func simulate(http http, s simulator, st chan stream, stat chan status) {
+func simulate(http mainHttpClient, s simulator, st chan stream, stat chan status) {
 	go func(s simulator, str chan stream, stat chan status) {
 		user := s.user
 		urls := user.urls
