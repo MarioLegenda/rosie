@@ -83,7 +83,7 @@ func validateRequired(args map[string]string, required []string) problem {
 		}
 	}
 
-	return problem{desc: "--links argument is required."}
+	return problem{desc: "--urls argument is required."}
 }
 
 func processLinks(links string) []string {
@@ -215,19 +215,19 @@ Rosie will visit provided URLs in random intervals just as a user does.
 
 Arguments:
 
---links (required)
+--urls (required)
     A list of comma delimited links (GET requests) that will be visited by this program. For example,
-    --links=https://google.com,https://facebook.com
+    --urls=https://google.com,https://facebook.com
 
 --users (default: 50)
-    The number of users that will be concurrently spawn and will visite URLs provided in --links argument
+    The number of users that will be concurrently spawn and will visite URLs provided in --urls argument
 
 --throttle
     If provided, users will be created incrementaly, 10 per second. This will slowly prepare your server
     for load testing.
 
 --interval (default: 3-15 {min:max} min=3)
-    An interval between which Rosie will send request to provided --links. For example, if you provide 3
+    An interval between which Rosie will send request to provided --urls. For example, if you provide 3
     links with --interval=3-6, every user will choose a random number between 3 and 6 and visit the URL. 
 
 --duration (default: 60 seconds)
@@ -237,8 +237,8 @@ Arguments:
 	}
 
 	problems := make([]problem, 0)
-	problems = append(problems, validateValid(argMap, []string{"--links", "--users", "--duration", "--throttle", "--interval"})...)
-	problems = append(problems, validateRequired(argMap, []string{"--links"}))
+	problems = append(problems, validateValid(argMap, []string{"--urls", "--users", "--duration", "--throttle", "--interval"})...)
+	problems = append(problems, validateRequired(argMap, []string{"--urls"}))
 
 	users, problem := processUsers(argMap)
 	problems = append(problems, problem)
@@ -246,7 +246,7 @@ Arguments:
 	problems = append(problems, problem)
 	min, max, problem := processInterval(argMap)
 	problems = append(problems, problem)
-	links := processLinks(argMap["--links"])
+	links := processLinks(argMap["--urls"])
 
 	if err := processProblems(problems); err != nil {
 		return arguments{}, false
