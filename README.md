@@ -1,6 +1,6 @@
 # Rosie
 
-This package is created to test resiliency of web server under real world user load.
+Rosie will help you load test your server.
 
 ## Installation
 
