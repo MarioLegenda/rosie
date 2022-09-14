@@ -46,9 +46,7 @@ func run() {
 	if args.throttle {
 		fmt.Println("Throttling requests in preparation to load testing...")
 		fmt.Println("")
-	}
 
-	if args.throttle {
 		throttle(data, simulators)
 	} else {
 		fmt.Println("Running load requests now...")
