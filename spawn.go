@@ -8,7 +8,7 @@ type spawnData struct {
 
 func newSpawnData() spawnData {
 	return spawnData{
-		stream: make(chan stream),
+		stream: make(chan stream, 0),
 		output: make(chan status),
 		http:   newHttp(),
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/fatih/color"
 	"strconv"
 	"strings"
 )
@@ -124,6 +125,10 @@ func processDuration(argMap map[string]string) (int, problem) {
 		return 0, problem{"Unable to convert --duration value to integer. --duration value must be an integer"}
 	}
 
+	if j < 60 {
+		return 0, problem{"--duration must be higher than 60 seconds."}
+	}
+
 	return j, problem{}
 }
 
@@ -184,8 +189,13 @@ Invalid arguments. The following problems were found:
 	}
 
 	if found {
-		fmt.Println(str)
-		fmt.Println("Run rosie --help for more information.")
+		errorFm := color.New(color.FgHiRed).Add(color.Bold)
+		greenFm := color.New(color.FgGreen).Add(color.Bold)
+		errorFm.Println(str)
+		fmt.Print("Run ")
+		greenFm.Print("rosie --help")
+		fmt.Print(" for more information")
+		fmt.Println("")
 		fmt.Println("")
 
 		return errors.New("Invalid arguments")
@@ -198,7 +208,32 @@ func newArgs(args []string) (arguments, bool) {
 	argMap := createArgsMap(args)
 
 	if _, ok := argMap["--help"]; ok {
+		fmt.Println(`
+Rosie - server load simulator
 
+Rosie will visit provided URLs in random intervals just as a user does.
+
+Arguments:
+
+--links (required)
+    A list of comma delimited links (GET requests) that will be visited by this program. For example,
+    --links=https://google.com,https://facebook.com
+
+--users (default: 50)
+    The number of users that will be concurrently spawn and will visite URLs provided in --links argument
+
+--throttle
+    If provided, users will be created incrementaly, 10 per second. This will slowly prepare your server
+    for load testing.
+
+--interval (default: 3-15 {min:max} min=3)
+    An interval between which Rosie will send request to provided --links. For example, if you provide 3
+    links with --interval=3-6, every user will choose a random number between 3 and 6 and visit the URL. 
+
+--duration (default: 60 seconds)
+    How long will load tests last. Infinite load tests are not possible.
+`)
+		return arguments{}, false
 	}
 
 	problems := make([]problem, 0)
@@ -225,76 +260,4 @@ func newArgs(args []string) (arguments, bool) {
 		throttle:    processThrottle(argMap),
 		duration:    duration,
 	}, true
-
-	/*	_, ok := argMap["--links"]
-
-		if !ok {
-			return arguments{}, errors.New("--links argument is required. It must a comma separated list of valid http URLs. For example, --links=https://google.com,https://facebook.com")
-		}
-
-		for k, v := range argMap {
-			if k == "--links" {
-				a.links = strings.Split(v, ",")
-			}
-
-			if k == "--users" {
-				j, err := strconv.Atoi(v)
-
-				if err != nil {
-					return arguments{}, errors.New("Unable to convert --users value to integer. --users value must be an integer")
-				}
-
-				a.users = j
-			}
-
-			if k == "--interval" {
-				s := strings.Split(v, "-")
-
-				if len(s) == 2 {
-					m, err := strconv.Atoi(s[0])
-
-					if err != nil {
-						return arguments{}, errors.New("Invalid --interval argument. --interval argument can be either a single number (for max) or a range {min}-{max}. For example, 3 for maximum value or 3-15 for range. min cannot be less than 3.")
-					}
-
-					if m < 3 {
-						return arguments{}, errors.New("Invalid --interval argument. min cannot be less that 3")
-					}
-
-					n, err := strconv.Atoi(s[0])
-
-					if err != nil {
-						return arguments{}, errors.New("Invalid --interval argument. --interval argument can be either a single number (for max) or a range {min}-{max}. For example, 3 for maximum value or 3-15 for range. min cannot be less than 3.")
-					}
-
-					a.intervalMin = m
-					a.intervalMax = n
-				}
-
-				if len(s) == 1 {
-					m, err := strconv.Atoi(s[0])
-
-					if err != nil {
-						return arguments{}, errors.New("Invalid --interval argument. --interval argument can be either a single number (for max) or a range {min}-{max}. For example, 3 for maximum value or 3-15 for range. min cannot be less than 3.")
-					}
-
-					a.intervalMax = m
-				}
-			}
-
-			if k == "--throttle" && v == "true" {
-				a.throttle = true
-			}
-
-			if k == "--duration" {
-				m, err := strconv.Atoi(v)
-
-				if err != nil {
-					return arguments{}, errors.New("Unable to convert --duration value to integer. --duration value must be an integer")
-				}
-
-				a.duration = m
-			}
-		}
-	*/
 }

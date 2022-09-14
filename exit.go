@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/fatih/color"
 	pb "github.com/schollz/progressbar/v3"
 	"os"
 	"os/signal"
@@ -97,23 +98,29 @@ func watchExit(exit exit, ttlCh chan []streamResult) {
 	fmt.Println(fmt.Sprintf("Total content length: %d bytes", totalContentLen))
 	fmt.Println("")
 
-	min := streamResults[0].timeTaken
-	for _, n := range streamResults {
-		if n.status != 0 && n.timeTaken < min {
-			min = n.timeTaken
+	if len(streamResults) > 0 {
+		min := streamResults[0].timeTaken
+		for _, n := range streamResults {
+			if n.status != 0 && n.timeTaken < min {
+				min = n.timeTaken
+			}
 		}
-	}
 
-	var max time.Duration
-	for _, n := range streamResults {
-		if n.status != 0 && n.timeTaken > max {
-			max = n.timeTaken
+		var max time.Duration
+		for _, n := range streamResults {
+			if n.status != 0 && n.timeTaken > max {
+				max = n.timeTaken
+			}
 		}
-	}
 
-	fmt.Printf("Fastest request: %.3vms\n", min)
-	fmt.Printf("Slowest request: %.3vms\n", max)
-	fmt.Println("")
+		fmt.Printf("Fastest request: %.3vms\n", min)
+		fmt.Printf("Slowest request: %.3vms\n", max)
+		fmt.Println("")
+	} else {
+		warn := color.New(color.FgYellow).Add(color.Bold)
+		warn.Println("WARNING: No information was able to be collected. This might be because the program has been interrupted before any requests could be sent.")
+		fmt.Println("")
+	}
 
 	go func() {
 		exit.stop <- true

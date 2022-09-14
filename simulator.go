@@ -34,7 +34,6 @@ func newSimulator(user user) simulator {
 
 func click(http mainHttpClient, url string) streamResult {
 	response, timeTaken, err := sendRequest(url)
-	defer response.Body.Close()
 
 	if err != nil {
 		return streamResult{
@@ -48,12 +47,16 @@ func click(http mainHttpClient, url string) streamResult {
 		body, err := ioutil.ReadAll(response.Body)
 
 		if err != nil {
+			response.Body.Close()
+
 			return streamResult{
 				status:        response.StatusCode,
 				contentLength: 0,
 				timeTaken:     timeTaken,
 			}
 		}
+
+		response.Body.Close()
 
 		return streamResult{
 			status:        response.StatusCode,

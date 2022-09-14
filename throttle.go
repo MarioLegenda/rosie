@@ -9,9 +9,6 @@ import (
 func throttle(spawnData spawnData, simulators []simulator) {
 	lc := newLoadCalc(len(simulators), 10)
 
-	fmt.Println("Throttling requests in preparation to load testing...")
-	fmt.Println("")
-
 	bar := pb.Default(int64(lc.total + lc.remainder))
 
 	curr := 0

@@ -14,10 +14,7 @@ func random(min int, max int) int {
 }
 
 type user struct {
-	UUID     string `faker:"uuid_digit"`
-	Name     string `faker:"name"`
-	LastName string `faker:"last_name"`
-	Email    string `faker:"email"`
+	UUID string `faker:"uuid_digit"`
 
 	Min int
 	Max int

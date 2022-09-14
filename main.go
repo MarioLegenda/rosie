@@ -29,19 +29,24 @@ func run() {
 	args, ok := newArgs(os.Args[1:])
 
 	if !ok {
-		os.Exit(0)
+		return
 	}
 
 	http := newHttp()
 
 	coldStart(http, args.links)
-	time.Sleep(time.Second * 1)
+	time.Sleep(time.Second * 10)
 
 	stop := newExit()
 
 	users := createUsers(args)
 	simulators := createSimulator(users)
 	data := newSpawnData()
+
+	if args.throttle {
+		fmt.Println("Throttling requests in preparation to load testing...")
+		fmt.Println("")
+	}
 
 	if args.throttle {
 		throttle(data, simulators)

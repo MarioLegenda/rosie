@@ -11,6 +11,7 @@ type output struct {
 
 func watchOutput(st chan stream, ext exit) chan []streamResult {
 	stop := make(chan []streamResult)
+
 	// calculate request fail/success
 	go func(stream chan stream) {
 		streamResults := make([]streamResult, 0)
