@@ -2,6 +2,13 @@
 
 This package is created to test resiliency of web server under real world user load.
 
+## Installation
+
+For now, there is no streamlined way of installing this package. You can download the already
+built binaries in the build directory or clone this repository and build it yourself. Currently,
+this package does not work on Windows. If it gets traction, I will create an installation
+process and setup for all platforms.
+
 ## How it works
 
 Rosie creates "users" that will send request from provided urls in random intervals. After all urls
