@@ -6,6 +6,7 @@ import (
 	pb "github.com/schollz/progressbar/v3"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 )
@@ -47,12 +48,12 @@ func initProgressBar(duration int) {
 			bar.Add(1)
 			time.Sleep(1000 * time.Millisecond)
 		}
-		
+
 		bar.Close()
 	}()
 }
 
-func watchExit(exit exit, ttlCh chan total) {
+func watchExit(exit exit, ttlCh chan []streamResult) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	<-c
@@ -61,13 +62,57 @@ func watchExit(exit exit, ttlCh chan total) {
 	fmt.Println("Closing all simulators...")
 	exit.close()
 
-	ttl := <-ttlCh
+	streamResults := <-ttlCh
 	fmt.Println("Simulators closed. Collecting information...")
 	fmt.Println("")
 
-	fmt.Printf("Success: %d\n", ttl.success)
-	fmt.Printf("Failed: %d\n", ttl.failed)
-	fmt.Printf("Total: %d\n", ttl.total)
+	statusMap := make(map[string]int)
+	var totalContentLen int64
+	var failedRequests int64
+
+	for _, s := range streamResults {
+		if s.status == 0 {
+			failedRequests++
+
+			continue
+		}
+
+		status := strconv.Itoa(s.status)
+
+		if _, ok := statusMap[status]; !ok {
+			statusMap[status] = 0
+		}
+
+		statusMap[status]++
+		totalContentLen += s.contentLength
+	}
+
+	for k, v := range statusMap {
+		fmt.Println(fmt.Sprintf("Status code %s: %d", k, v))
+	}
+	fmt.Printf("Failed requests: %d\n", failedRequests)
+
+	fmt.Println("")
+	fmt.Printf("Total requests: %d\n", len(streamResults))
+	fmt.Println(fmt.Sprintf("Total content length: %d bytes", totalContentLen))
+	fmt.Println("")
+
+	min := streamResults[0].timeTaken
+	for _, n := range streamResults {
+		if n.status != 0 && n.timeTaken < min {
+			min = n.timeTaken
+		}
+	}
+
+	var max time.Duration
+	for _, n := range streamResults {
+		if n.status != 0 && n.timeTaken > max {
+			max = n.timeTaken
+		}
+	}
+
+	fmt.Printf("Fastest request: %.3vms\n", min)
+	fmt.Printf("Slowest request: %.3vms\n", max)
 	fmt.Println("")
 
 	go func() {

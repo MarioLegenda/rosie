@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"time"
 )
 
@@ -11,7 +12,13 @@ type simulator struct {
 
 type stream struct {
 	id     string
-	result bool
+	result streamResult
+}
+
+type streamResult struct {
+	status        int
+	contentLength int64
+	timeTaken     time.Duration
 }
 
 type status struct {
@@ -25,17 +32,44 @@ func newSimulator(user user) simulator {
 	}
 }
 
-func click(http mainHttpClient, url string) bool {
-	response, _ := sendRequest(http, url)
+func click(http mainHttpClient, url string) streamResult {
+	response, timeTaken, err := sendRequest(url)
+	defer response.Body.Close()
 
-	if response.StatusCode < 200 || response.StatusCode > 299 {
-		return false
+	if err != nil {
+		return streamResult{
+			status:        0,
+			contentLength: 0,
+			timeTaken:     0,
+		}
 	}
 
-	return true
+	if response.ContentLength == -1 {
+		body, err := ioutil.ReadAll(response.Body)
+
+		if err != nil {
+			return streamResult{
+				status:        response.StatusCode,
+				contentLength: 0,
+				timeTaken:     timeTaken,
+			}
+		}
+
+		return streamResult{
+			status:        response.StatusCode,
+			contentLength: int64(len(body)),
+			timeTaken:     timeTaken,
+		}
+	}
+
+	return streamResult{
+		status:        response.StatusCode,
+		contentLength: response.ContentLength,
+		timeTaken:     timeTaken,
+	}
 }
 
-func newStream(id string, result bool) stream {
+func newStream(id string, result streamResult) stream {
 	return stream{
 		id:     id,
 		result: result,

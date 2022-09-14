@@ -2,9 +2,10 @@ package main
 
 import (
 	"crypto/tls"
-	"log"
 	"net/http"
+	"net/http/httptrace"
 	"simulation/httpClient"
+	"time"
 )
 
 type mainHttpClient struct {
@@ -26,7 +27,7 @@ func newHttp() mainHttpClient {
 	return mainHttpClient{client: client}
 }
 
-func sendRequest(http mainHttpClient, url string) (*http.Response, error) {
+func sendRequest(url string) (*http.Response, time.Duration, error) {
 	request, err := httpClient.NewRequest(httpClient.Request{
 		Headers: nil,
 		Url:     url,
@@ -35,14 +36,27 @@ func sendRequest(http mainHttpClient, url string) (*http.Response, error) {
 	})
 
 	if err != nil {
-		log.Fatalln(err)
+		return nil, 0, err
 	}
 
-	response, err := httpClient.Make(request, http.client)
+	var start time.Time
+	var end time.Duration
+	trace := &httptrace.ClientTrace{
+		DNSStart: func(dsi httptrace.DNSStartInfo) {
+			start = time.Now()
+		},
+		GotFirstResponseByte: func() {
+			end = time.Since(start)
+		},
+	}
+
+	request = request.WithContext(httptrace.WithClientTrace(request.Context(), trace))
+
+	response, err := http.DefaultTransport.RoundTrip(request)
 
 	if err != nil {
-		log.Fatalln(err)
+		return nil, 0, err
 	}
 
-	return response, nil
+	return response, end, nil
 }
