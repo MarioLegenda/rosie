@@ -1,6 +1,8 @@
 package main
 
-import "time"
+import (
+	"time"
+)
 
 type simulator struct {
 	id string
@@ -26,7 +28,7 @@ func newSimulator(user user) simulator {
 func click(http mainHttpClient, url string) bool {
 	response, _ := sendRequest(http, url)
 
-	if response.StatusCode < 200 && response.StatusCode > 299 {
+	if response.StatusCode < 200 || response.StatusCode > 299 {
 		return false
 	}
 

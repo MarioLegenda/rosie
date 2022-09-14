@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"github.com/fatih/color"
 	"os"
 	"time"
 )
@@ -16,17 +16,18 @@ func coldStart(http mainHttpClient, urls []string) {
 	fmt.Println("Initiating cold start...")
 	for _, url := range urls {
 		if value := click(http, url); !value {
-			log.Fatal(fmt.Sprintf("URL %s did not return status code 200", url))
+			c := color.New(color.FgHiYellow).Add(color.Bold)
+			c.Println(fmt.Sprintf("WARNING: URL %s did not return status code 200", url))
 		}
 	}
 	fmt.Println("Cold start finished. Sleeping for 10 seconds to give the server time to prepare for real testing...")
 }
 
 func run() {
-	args, err := newArgs(os.Args[1:])
+	args, ok := newArgs(os.Args[1:])
 
-	if err != nil {
-		log.Fatal(err.Error())
+	if !ok {
+		os.Exit(0)
 	}
 
 	http := newHttp()
