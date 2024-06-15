@@ -1,4 +1,4 @@
-package httpClient
+package main
 
 import (
 	"bytes"
@@ -6,26 +6,21 @@ import (
 	"time"
 )
 
-type Header struct {
-	Name  string
-	Value string
-}
-
-type Request struct {
+type request struct {
 	Headers map[string]string
 	Url     string
 	Method  string
 	Body    []byte
 }
 
-type ClientParams struct {
+type clientParams struct {
 	Transport     http.RoundTripper
 	CheckRedirect func(req *http.Request, via []*http.Request) error
 	Jar           http.CookieJar
 	Timeout       time.Duration
 }
 
-func NewClient(params ClientParams) *http.Client {
+func NewClient(params clientParams) *http.Client {
 	return &http.Client{
 		Transport:     params.Transport,
 		CheckRedirect: params.CheckRedirect,
@@ -34,7 +29,7 @@ func NewClient(params ClientParams) *http.Client {
 	}
 }
 
-func NewRequest(request Request) (*http.Request, error) {
+func NewRequest(request request) (*http.Request, error) {
 	r, err := http.NewRequest(request.Method, request.Url, bytes.NewBuffer(request.Body))
 
 	if err != nil {

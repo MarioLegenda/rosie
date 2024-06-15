@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"net/http"
 	"net/http/httptrace"
-	"simulation/httpClient"
 	"time"
 )
 
@@ -13,7 +12,7 @@ type mainHttpClient struct {
 }
 
 func newHttp() mainHttpClient {
-	client := httpClient.NewClient(httpClient.ClientParams{
+	client := NewClient(clientParams{
 		Transport: &http.Transport{
 			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
 			MaxConnsPerHost:     1024,
@@ -28,7 +27,7 @@ func newHttp() mainHttpClient {
 }
 
 func sendRequest(url string) (*http.Response, time.Duration, error) {
-	request, err := httpClient.NewRequest(httpClient.Request{
+	request, err := NewRequest(request{
 		Headers: nil,
 		Url:     url,
 		Method:  "GET",
