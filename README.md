@@ -4,10 +4,11 @@ Rosie will help you load test your server.
 
 ## Installation
 
-For now, there is no streamlined way of installing this package. You can download the already
-built binaries in the build directory or clone this repository and build it yourself. Currently,
-this package does not work on Windows. If it gets traction, I will create an installation
-process and setup for all platforms.
+````
+go install github.com/MarioLegenda/rosie@v1.0.0
+````
+
+This requires that `/usr/local/bin` (or wherever your Go bin directory is) is in your `PATH`.
 
 ## How it works
 
@@ -19,7 +20,7 @@ intervals.
 ## Usage
 
 ```
-./rosie --user=20 --urls=https://facebook,https://google.com --interval=3-20
+rosie --users=20 --urls=https://facebook,https://google.com --interval=3-20
 ```
 
 This command will create 20 virtual users that will send concurrent requests in a random interval between 3 and 
@@ -27,14 +28,14 @@ This command will create 20 virtual users that will send concurrent requests in 
 3 and 20, and then clicks the next One. After all URLs are "clicked", user "logs out" and starts again. 
 
 ```
-./rosie --user=20 --urls=https://facebook,https://google.com --interval=3
+rosie --users=20 --urls=https://facebook,https://google.com --interval=3
 ```
 
 This command will create 20 virtual users that will send concurrent requests in a random interval between 3 and
 15 seconds for 60 seconds. When {min}-{max} notation is not specified, `min` defaults to 3 and `max` defaults to 15.
 
 ```
-./rosie --user=20 --urls=https://facebook,https://google.com --interval=3 --throttle --duration=120
+rosie --users=20 --urls=https://facebook,https://google.com --interval=3 --throttle --duration=120
 ```
 
 This command will create 20 virtual users that will send concurrent requests in a random interval between 3 and
