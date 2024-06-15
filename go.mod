@@ -1,4 +1,4 @@
-module simulation
+module github.com/MarioLegenda/rosie
 
 go 1.16
 
